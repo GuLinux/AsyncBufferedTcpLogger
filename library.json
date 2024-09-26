@@ -1,6 +1,6 @@
 {
   "name": "AsyncBufferedTcpLogger",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A network Printable logger, with automatic backlog management and line buffering",
   "keywords": "log, logger, network, printable, serial",
   "repository":
