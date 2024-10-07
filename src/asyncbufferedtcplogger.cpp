@@ -2,12 +2,15 @@
 
 #include "asyncbufferedtcplogger.h"
 
-AsyncBufferedTCPLogger::AsyncBufferedTCPLogger(uint16_t port, uint16_t backlog_lines) : loggerServer{port}, backlog_lines{backlog_lines} {
-    loggerServer.onClient([this](void *,AsyncClient *c){
+AsyncBufferedTCPLogger::AsyncBufferedTCPLogger(uint16_t port, uint16_t backlog_lines, const AcDataHandler &onDataReceived) : loggerServer{port}, backlog_lines{backlog_lines} {
+    loggerServer.onClient([this, onDataReceived](void *,AsyncClient *c){
       this->client = c;
       c->onDisconnect([this](void *,AsyncClient *){
         this->client = nullptr;
       }, nullptr);
+      if(onDataReceived) {
+        c->onData(onDataReceived, nullptr);
+      }
       if(!this->backlog.empty()) {
         c->write("==== Flushing backlog ====\n");
         while(!this->backlog.empty()) {

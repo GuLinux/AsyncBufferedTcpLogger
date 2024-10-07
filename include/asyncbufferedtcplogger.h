@@ -6,7 +6,7 @@
 
 class AsyncBufferedTCPLogger: public Print {
 public:
-  AsyncBufferedTCPLogger(uint16_t port, uint16_t backlog_lines = 0);
+  AsyncBufferedTCPLogger(uint16_t port, uint16_t backlog_lines = 0, const AcDataHandler &onDataReceived = {});
   void setup();
   void setBacklogLines(uint16_t backlog_lines) { this->backlog_lines = backlog_lines; };
   virtual size_t write(uint8_t c);
