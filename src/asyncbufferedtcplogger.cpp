@@ -12,12 +12,12 @@ AsyncBufferedTCPLogger::AsyncBufferedTCPLogger(uint16_t port, uint16_t backlog_l
         c->onData(onDataReceived, nullptr);
       }
       if(!this->backlog.empty()) {
-        c->write("==== Flushing backlog ====\n");
+//        c->write("==== Flushing backlog ====\n");
         while(!this->backlog.empty()) {
           c->write(this->backlog.front().c_str(), this->backlog.front().length());
           this->backlog.pop();
         }
-        c->write("==== Backlog finished ====\n");
+//        c->write("==== Backlog finished ====\n");
       }
     }, nullptr);
 }
@@ -41,7 +41,7 @@ void AsyncBufferedTCPLogger::setup() {
 
 size_t AsyncBufferedTCPLogger::write(uint8_t c) {
     buffer[currentPosition++] = c;
-    if(c == '\n') {
+    if(c == '\n' || c == '\r') {
       if(!client) {
         fillBacklog();
         reset();
