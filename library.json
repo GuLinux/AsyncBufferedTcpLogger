@@ -1,6 +1,6 @@
 {
   "name": "AsyncBufferedTcpLogger",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "description": "A network Printable logger, with automatic backlog management and line buffering",
   "keywords": "log, logger, network, printable, serial",
   "repository":
@@ -20,7 +20,7 @@
   "license": "GPLv3",
   "homepage": "https://github.com/GuLinux/AsyncBufferedTcpLogger",
   "dependencies": {
-    "AsyncTCP": "https://github.com/mathieucarbou/AsyncTCP.git#v3.2.4"
+    "AsyncTCP": "ESP32Async/AsyncTCP"
   },
   "frameworks": "arduino",
   "platforms": "expressif32"
