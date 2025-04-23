@@ -1,6 +1,6 @@
 {
   "name": "AsyncBufferedTcpLogger",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A network Printable logger, with automatic backlog management and line buffering",
   "keywords": "log, logger, network, printable, serial",
   "repository":
@@ -23,5 +23,7 @@
     "AsyncTCP": "ESP32Async/AsyncTCP"
   },
   "frameworks": "arduino",
-  "platforms": "expressif32"
+  "platforms": [
+      "espressif32"
+  ]
 }
