@@ -9,6 +9,7 @@ class AsyncBufferedTCPLogger: public Print {
 public:
   static AsyncBufferedTCPLogger &instance();
   void setup(uint16_t port);
+  void begin(uint16_t port) { setup(port); }; // Compatibility with Serial
   void setBacklogLines(uint16_t backlog_lines) { this->backlog_lines = backlog_lines; };
   virtual size_t write(uint8_t c);
   void setOnDataReceived(const AcDataHandler &onDataReceived) { this->onDataReceived = onDataReceived; };
