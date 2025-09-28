@@ -2,36 +2,43 @@
 
 #include "asyncbufferedtcplogger.h"
 
-AsyncBufferedTCPLogger::AsyncBufferedTCPLogger(uint16_t port, uint16_t backlog_lines, const AcDataHandler &onDataReceived) : loggerServer{port}, backlog_lines{backlog_lines} {
-    loggerServer.onClient([this, onDataReceived](void *,AsyncClient *c){
-      this->client = c;
-      c->onDisconnect([this](void *,AsyncClient *){
-        this->client = nullptr;
-      }, nullptr);
-      if(onDataReceived) {
-        c->onData(onDataReceived, nullptr);
-      }
-      if(!this->backlog.empty()) {
-//        c->write("==== Flushing backlog ====\n");
-        while(!this->backlog.empty()) {
-          c->write(this->backlog.front().c_str(), this->backlog.front().length());
-          this->backlog.pop();
-        }
-//        c->write("==== Backlog finished ====\n");
-      }
-    }, nullptr);
+AsyncBufferedTCPLogger::AsyncBufferedTCPLogger() {
+
 }
 
-void AsyncBufferedTCPLogger::setup() {
+AsyncBufferedTCPLogger &AsyncBufferedTCPLogger::instance() {
+  static AsyncBufferedTCPLogger instance;
+  return instance;
+}
+
+void AsyncBufferedTCPLogger::setup(uint16_t port) {
+  this->loggerServer = std::make_unique<AsyncServer>(port);
+
+  loggerServer->onClient([this](void *,AsyncClient *c){
+    this->client = c;
+    c->onDisconnect([this](void *,AsyncClient *){
+      this->client = nullptr;
+    }, nullptr);
+    if(this->onDataReceived) {
+      c->onData(this->onDataReceived, nullptr);
+    }
+    if(!this->backlog.empty()) {
+      while(!this->backlog.empty()) {
+        c->write(this->backlog.front().c_str(), this->backlog.front().length());
+        this->backlog.pop();
+      }
+    }
+  }, nullptr);
+
   WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info){
     switch (event) {
     case ARDUINO_EVENT_WIFI_STA_CONNECTED:
     case ARDUINO_EVENT_WIFI_AP_START:
-      this->loggerServer.begin();
+      this->loggerServer->begin();
       break;
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
     case ARDUINO_EVENT_WIFI_AP_STOP:
-      this->loggerServer.end();
+      this->loggerServer->end();
       this->client = nullptr;
     default:
       break;
