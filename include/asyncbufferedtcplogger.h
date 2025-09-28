@@ -5,6 +5,10 @@
 #include <AsyncTCP.h>
 #include <memory>
 
+#ifndef DEFAULT_ASYNC_BUFFERED_TCP_LOGGER_BACKLOG_LINES
+#define DEFAULT_ASYNC_BUFFERED_TCP_LOGGER_BACKLOG_LINES 100
+#endif
+
 class AsyncBufferedTCPLogger: public Print {
 public:
   static AsyncBufferedTCPLogger &instance();
@@ -22,6 +26,6 @@ private:
   std::queue<String> backlog;
   uint16_t currentPosition = 0;
   std::unique_ptr<AsyncServer> loggerServer;
-  uint16_t backlog_lines = 0;
+  uint16_t backlog_lines = DEFAULT_ASYNC_BUFFERED_TCP_LOGGER_BACKLOG_LINES;
   AcDataHandler onDataReceived;
 };
