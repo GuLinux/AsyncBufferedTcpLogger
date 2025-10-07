@@ -15,7 +15,12 @@ void AsyncBufferedTCPLogger::setup(uint16_t port) {
   this->loggerServer = std::make_unique<AsyncServer>(port);
 
   loggerServer->onClient([this](void *,AsyncClient *c){
+    if(this->client) {
+      // Only one client at a time
+      this->client->close();
+    }
     this->client = c;
+    c->setNoDelay(true);
     c->onDisconnect([this](void *,AsyncClient *){
       this->client = nullptr;
     }, nullptr);
