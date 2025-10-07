@@ -11,12 +11,18 @@ AsyncBufferedTCPLogger &AsyncBufferedTCPLogger::instance() {
   return instance;
 }
 
+void AsyncBufferedTCPLogger::flush() {
+  if(client) {
+    client->send();
+  }
+}
+
 void AsyncBufferedTCPLogger::setup(uint16_t port) {
   this->loggerServer = std::make_unique<AsyncServer>(port);
 
   loggerServer->onClient([this](void *,AsyncClient *c){
     if(this->client) {
-      // Only one client at a time
+      // Only one client is supported at this time
       this->client->close();
     }
     this->client = c;
@@ -33,6 +39,7 @@ void AsyncBufferedTCPLogger::setup(uint16_t port) {
         c->flush();
         this->backlog.pop();
       }
+      flush();
     }
   }, nullptr);
 
@@ -61,7 +68,7 @@ size_t AsyncBufferedTCPLogger::write(uint8_t c) {
         return 0;
       }
       client->write(buffer.data(), currentPosition);
-      client->flush();
+      flush();
       reset();
     }
     

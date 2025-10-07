@@ -22,6 +22,7 @@ private:
   AsyncClient *client = nullptr;
   void reset();
   void fillBacklog();
+  void flush();
   std::array<char, 1024> buffer = {0};
   std::queue<String> backlog;
   uint16_t currentPosition = 0;
