@@ -35,11 +35,9 @@ void AsyncBufferedTCPLogger::setup(uint16_t port) {
     }
     if(!this->backlog.empty()) {
       while(!this->backlog.empty()) {
-        c->write(this->backlog.front().c_str(), this->backlog.front().length());
-        flush();
+        client_write(this->backlog.front().c_str(), this->backlog.front().length());
         this->backlog.pop();
       }
-      flush();
     }
   }, nullptr);
 
@@ -67,12 +65,21 @@ size_t AsyncBufferedTCPLogger::write(uint8_t c) {
         reset();
         return 0;
       }
-      client->write(buffer.data(), currentPosition);
-      flush();
+      client_write(buffer.data(), currentPosition);
       reset();
     }
     
     return 1;
+}
+
+void AsyncBufferedTCPLogger::client_write(const char *buf, size_t size) {
+  size_t start = 0;
+  if(client) {
+    while(start < size) {
+      start = client->write(buf + start, size) + 1;
+      flush();
+    }
+  }
 }
 
 void AsyncBufferedTCPLogger::reset() {
