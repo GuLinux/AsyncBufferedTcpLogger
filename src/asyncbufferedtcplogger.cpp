@@ -36,7 +36,7 @@ void AsyncBufferedTCPLogger::setup(uint16_t port) {
     if(!this->backlog.empty()) {
       while(!this->backlog.empty()) {
         c->write(this->backlog.front().c_str(), this->backlog.front().length());
-        c->flush();
+        flush();
         this->backlog.pop();
       }
       flush();
