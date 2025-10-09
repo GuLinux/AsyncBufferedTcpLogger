@@ -17,6 +17,15 @@ void AsyncBufferedTCPLogger::flush() {
   }
 }
 
+bool AsyncBufferedTCPLogger::sendBacklogLine() {
+  if(!this->backlog.empty() && this->client) {
+    client_write(this->backlog.front().c_str(), this->backlog.front().length());
+    this->backlog.pop();
+    return true;
+  }
+  return false;
+}
+
 void AsyncBufferedTCPLogger::setup(uint16_t port) {
   this->loggerServer = std::make_unique<AsyncServer>(port);
 
@@ -34,10 +43,12 @@ void AsyncBufferedTCPLogger::setup(uint16_t port) {
       c->onData(this->onDataReceived, nullptr);
     }
     if(!this->backlog.empty()) {
-      while(!this->backlog.empty()) {
-        client_write(this->backlog.front().c_str(), this->backlog.front().length());
-        this->backlog.pop();
-      }
+      c->onAck([this](void *arg, AsyncClient *client, size_t len, uint32_t time){
+        if(!sendBacklogLine()) {
+          this->client->onAck(nullptr, nullptr);
+        }
+      });
+      sendBacklogLine();
     }
   }, nullptr);
 

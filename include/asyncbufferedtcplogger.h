@@ -30,4 +30,5 @@ private:
   std::unique_ptr<AsyncServer> loggerServer;
   uint16_t backlog_lines = DEFAULT_ASYNC_BUFFERED_TCP_LOGGER_BACKLOG_LINES;
   AcDataHandler onDataReceived;
+  bool sendBacklogLine();
 };
