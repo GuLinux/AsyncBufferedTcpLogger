@@ -17,6 +17,7 @@ public:
   void setBacklogLines(uint16_t backlog_lines) { this->backlog_lines = backlog_lines; };
   virtual size_t write(uint8_t c);
   void setOnDataReceived(const AcDataHandler &onDataReceived) { this->onDataReceived = onDataReceived; };
+  std::queue<String> getBacklog() const { return backlog; }
 private:
   AsyncBufferedTCPLogger();
   AsyncClient *client = nullptr;
