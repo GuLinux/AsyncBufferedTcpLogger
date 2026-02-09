@@ -11,11 +11,31 @@ AsyncBufferedTCPLogger &AsyncBufferedTCPLogger::instance() {
   return instance;
 }
 
+void AsyncBufferedTCPLogger::flush() {
+  if(client) {
+    client->send();
+  }
+}
+
+bool AsyncBufferedTCPLogger::sendBacklogLine() {
+  if(!this->backlog.empty() && this->client) {
+    client_write(this->backlog.front().c_str(), this->backlog.front().length());
+    this->backlog.pop();
+    return true;
+  }
+  return false;
+}
+
 void AsyncBufferedTCPLogger::setup(uint16_t port) {
   this->loggerServer = std::make_unique<AsyncServer>(port);
 
   loggerServer->onClient([this](void *,AsyncClient *c){
+    if(this->client) {
+      // Only one client is supported at this time
+      this->client->close();
+    }
     this->client = c;
+    c->setNoDelay(true);
     c->onDisconnect([this](void *,AsyncClient *){
       this->client = nullptr;
     }, nullptr);
@@ -23,11 +43,12 @@ void AsyncBufferedTCPLogger::setup(uint16_t port) {
       c->onData(this->onDataReceived, nullptr);
     }
     if(!this->backlog.empty()) {
-      while(!this->backlog.empty()) {
-        c->write(this->backlog.front().c_str(), this->backlog.front().length());
-        c->flush();
-        this->backlog.pop();
-      }
+      c->onAck([this](void *arg, AsyncClient *client, size_t len, uint32_t time){
+        if(!sendBacklogLine()) {
+          this->client->onAck(nullptr, nullptr);
+        }
+      });
+      sendBacklogLine();
     }
   }, nullptr);
 
@@ -55,12 +76,21 @@ size_t AsyncBufferedTCPLogger::write(uint8_t c) {
         reset();
         return 0;
       }
-      client->write(buffer.data(), currentPosition);
-      client->flush();
+      client_write(buffer.data(), currentPosition);
       reset();
     }
     
     return 1;
+}
+
+void AsyncBufferedTCPLogger::client_write(const char *buf, size_t size) {
+  size_t start = 0;
+  if(client) {
+    while(start < size) {
+      start = client->write(buf + start, size) + 1;
+      flush();
+    }
+  }
 }
 
 void AsyncBufferedTCPLogger::reset() {

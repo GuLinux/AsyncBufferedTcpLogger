@@ -17,15 +17,19 @@ public:
   void setBacklogLines(uint16_t backlog_lines) { this->backlog_lines = backlog_lines; };
   virtual size_t write(uint8_t c);
   void setOnDataReceived(const AcDataHandler &onDataReceived) { this->onDataReceived = onDataReceived; };
+  std::queue<String> getBacklog() const { return backlog; }
 private:
   AsyncBufferedTCPLogger();
   AsyncClient *client = nullptr;
   void reset();
   void fillBacklog();
+  void flush();
+  void client_write(const char *buf, size_t size);
   std::array<char, 1024> buffer = {0};
   std::queue<String> backlog;
   uint16_t currentPosition = 0;
   std::unique_ptr<AsyncServer> loggerServer;
   uint16_t backlog_lines = DEFAULT_ASYNC_BUFFERED_TCP_LOGGER_BACKLOG_LINES;
   AcDataHandler onDataReceived;
+  bool sendBacklogLine();
 };
